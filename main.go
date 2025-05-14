@@ -26,7 +26,7 @@ func main() {
     r := gin.Default()
 
     r.GET("/courses", func(c *gin.Context) {
-        rows, err := db.Query("SELECT id, title FROM courses")
+        rows, err := db.Query("SELECT id, name, desc FROM courses")
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
             return
