@@ -1,0 +1,4 @@
+github.com/gin-gonic/gin v1.10.0 h1:9Ubg7J2bA4BZEBZtS9rc7P6NBtdrUoRQd3v3JVm3A4I=
+github.com/gin-gonic/gin v1.10.0/go.mod h1:cKylOHvJqnm6GNiNeEioNCLW5tN7Snq9QpUtqR98o/I=
+github.com/lib/pq v1.10.9 h1:47h6jLFSfknXt99YvMJ4Wcoi6G4LSYhRZh7qVuHDszY=
+github.com/lib/pq v1.10.9/go.mod h1:Th4YQINnTrTYDvlZd6+U2bprEz0GVXLwBh1h6HUbSxE=
