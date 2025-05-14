@@ -12,7 +12,7 @@ import (
 type Course struct {
     ID   string   `json:"id"`
     Name string  `json:"name"`
-    Desc srting  `json:"desc"`
+    Desc string  `json:"desc"`
 }
 
 func main() {
