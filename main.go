@@ -14,7 +14,7 @@ type Course struct {
 }
 
 func main() {
-	connStr := os.Getenv("DATABASE_URL") // Подключение через переменную окружения
+	connStr := os.Getenv("postgresql://neondb_owner:npg_K2FJuC6zpiNO@ep-wandering-tree-a28tfjaf-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require") // Подключение через переменную окружения
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
