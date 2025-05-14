@@ -10,8 +10,9 @@ import (
 )
 
 type Course struct {
-    ID    int    `json:"id"`
-    Title string `json:"title"`
+    ID   string   `json:"id"`
+    Name string  `json:"name"`
+    Desc srting  `json:"desc"`
 }
 
 func main() {
@@ -35,7 +36,7 @@ func main() {
         var courses []Course
         for rows.Next() {
             var course Course
-            if err := rows.Scan(&course.ID, &course.Title); err != nil {
+            if err := rows.Scan(&course.ID, &course.Name, &course.Desc); err != nil {
                 continue
             }
             courses = append(courses, course)
