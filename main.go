@@ -12,7 +12,7 @@ import (
 type Course struct {
     ID   string   `json:"id"`
     Name string  `json:"name"`
-    Desc string  `json:"desc"`
+    Description string  `json:"description"`
 }
 
 func main() {
@@ -26,7 +26,7 @@ func main() {
     r := gin.Default()
 
     r.GET("/courses", func(c *gin.Context) {
-        rows, err := db.Query("SELECT id, name, desc FROM courses")
+        rows, err := db.Query("SELECT id, name, description FROM courses")
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
             return
@@ -36,7 +36,7 @@ func main() {
         var courses []Course
         for rows.Next() {
             var course Course
-            if err := rows.Scan(&course.ID, &course.Name, &course.Desc); err != nil {
+            if err := rows.Scan(&course.ID, &course.Name, &course.Description); err != nil {
                 continue
             }
             courses = append(courses, course)
