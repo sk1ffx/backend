@@ -3,7 +3,7 @@ services:
     name: go-backend
     env: go
     plan: free
-    buildCommand: go build -o main .
+    buildCommand: go build -tags netgo -ldflags "-s -w" -o main .
     startCommand: ./main
     envVars:
       - key: postgresql://neondb_owner:npg_K2FJuC6zpiNO@ep-wandering-tree-a28tfjaf-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require
