@@ -14,7 +14,7 @@ type Course struct {
     Name        string `json:"name"`
     Description string `json:"description"`
     Level       string `json:"level"`
-    Courseclass string `json:"courseclass"`
+    Coss        string `json:"coss"`
 }
 
 type Progress struct {
@@ -34,7 +34,7 @@ func main() {
 
     // Получение списка курсов
     r.GET("/courses", func(c *gin.Context) {
-        rows, err := db.Query("SELECT id, name, description, level, courseclass FROM courses")
+        rows, err := db.Query("SELECT id, name, description, level, coss FROM courses")
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
             return
@@ -44,7 +44,7 @@ func main() {
         var courses []Course
         for rows.Next() {
             var course Course
-            if err := rows.Scan(&course.ID, &course.Name, &course.Description, &course.Level, &course.Courseclass); err != nil {
+            if err := rows.Scan(&course.ID, &course.Name, &course.Description, &course.Level, &course.Coss); err != nil {
                 continue
             }
             courses = append(courses, course)
