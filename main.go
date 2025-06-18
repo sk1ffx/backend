@@ -22,6 +22,14 @@ type Progress struct {
     CourseID string `json:"course_id"`
 }
 
+type Message struct {
+    ID        int    `json:"id"`
+    Username  string `json:"username"`
+    CourseID  string `json:"course_id"`
+    Message   string `json:"message"`
+    CreatedAt string `json:"created_at"`
+}
+
 func main() {
     connStr := os.Getenv("DATABASE_URL")
     db, err := sql.Open("postgres", connStr)
@@ -32,7 +40,6 @@ func main() {
 
     r := gin.Default()
 
-    // Получение списка курсов
     r.GET("/courses", func(c *gin.Context) {
         rows, err := db.Query("SELECT id, name, description, level, coss FROM courses")
         if err != nil {
@@ -53,7 +60,6 @@ func main() {
         c.JSON(http.StatusOK, courses)
     })
 
-    // Получение пройденных курсов для пользователя
     r.GET("/progress/:username", func(c *gin.Context) {
         username := c.Param("username")
         rows, err := db.Query("SELECT course_id FROM progress WHERE username = $1", username)
@@ -75,7 +81,6 @@ func main() {
         c.JSON(http.StatusOK, completed)
     })
 
-    // Отметить курс как завершённый
     r.POST("/progress", func(c *gin.Context) {
         var progress Progress
         if err := c.BindJSON(&progress); err != nil {
@@ -92,6 +97,46 @@ func main() {
         }
 
         c.JSON(http.StatusOK, gin.H{"message": "Progress saved"})
+    })
+
+    r.GET("/chat/:course_id", func(c *gin.Context) {
+        courseID := c.Param("course_id")
+
+        rows, err := db.Query("SELECT id, username, course_id, message, created_at FROM messages WHERE course_id = $1 ORDER BY created_at ASC", courseID)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+        defer rows.Close()
+
+        var messages []Message
+        for rows.Next() {
+            var msg Message
+            if err := rows.Scan(&msg.ID, &msg.Username, &msg.CourseID, &msg.Message, &msg.CreatedAt); err != nil {
+                continue
+            }
+            messages = append(messages, msg)
+        }
+
+        c.JSON(http.StatusOK, messages)
+    })
+
+    r.POST("/chat", func(c *gin.Context) {
+        var msg Message
+        if err := c.BindJSON(&msg); err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+            return
+        }
+
+        _, err := db.Exec("INSERT INTO messages (username, course_id, message) VALUES ($1, $2, $3)",
+            msg.Username, msg.CourseID, msg.Message)
+
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+
+        c.JSON(http.StatusOK, gin.H{"message": "Message sent"})
     })
 
     port := os.Getenv("PORT")
