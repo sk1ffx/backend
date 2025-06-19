@@ -40,6 +40,7 @@ func main() {
 
     r := gin.Default()
 
+    // 📘 Получение всех курсов
     r.GET("/courses", func(c *gin.Context) {
         rows, err := db.Query("SELECT id, name, description, level, coss FROM courses")
         if err != nil {
@@ -60,6 +61,7 @@ func main() {
         c.JSON(http.StatusOK, courses)
     })
 
+    // 📘 Получение всех завершённых курсов пользователя
     r.GET("/progress/:username", func(c *gin.Context) {
         username := c.Param("username")
         rows, err := db.Query("SELECT course_id FROM progress WHERE username = $1", username)
@@ -81,6 +83,31 @@ func main() {
         c.JSON(http.StatusOK, completed)
     })
 
+    // ✅ Новый эндпоинт: Проверка наличия прогресса
+    r.GET("/progress/check", func(c *gin.Context) {
+        username := c.Query("username")
+        courseID := c.Query("course_id")
+
+        if username == "" || courseID == "" {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "Missing parameters"})
+            return
+        }
+
+        var exists bool
+        err := db.QueryRow(
+            "SELECT EXISTS (SELECT 1 FROM progress WHERE username = $1 AND course_id = $2)",
+            username, courseID,
+        ).Scan(&exists)
+
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+
+        c.JSON(http.StatusOK, gin.H{"exists": exists})
+    })
+
+    // 📘 Добавление прогресса (если ещё нет — ON CONFLICT DO NOTHING)
     r.POST("/progress", func(c *gin.Context) {
         var progress Progress
         if err := c.BindJSON(&progress); err != nil {
@@ -88,8 +115,10 @@ func main() {
             return
         }
 
-        _, err := db.Exec("INSERT INTO progress (username, course_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-            progress.Username, progress.CourseID)
+        _, err := db.Exec(
+            "INSERT INTO progress (username, course_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+            progress.Username, progress.CourseID,
+        )
 
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -99,10 +128,14 @@ func main() {
         c.JSON(http.StatusOK, gin.H{"message": "Progress saved"})
     })
 
+    // 📘 Получение сообщений чата
     r.GET("/chat/:course_id", func(c *gin.Context) {
         courseID := c.Param("course_id")
 
-        rows, err := db.Query("SELECT id, username, course_id, message, created_at FROM messages WHERE course_id = $1 ORDER BY created_at ASC", courseID)
+        rows, err := db.Query(
+            "SELECT id, username, course_id, message, created_at FROM messages WHERE course_id = $1 ORDER BY created_at ASC",
+            courseID,
+        )
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
             return
@@ -121,6 +154,7 @@ func main() {
         c.JSON(http.StatusOK, messages)
     })
 
+    // 📘 Отправка сообщения в чат
     r.POST("/chat", func(c *gin.Context) {
         var msg Message
         if err := c.BindJSON(&msg); err != nil {
@@ -128,8 +162,10 @@ func main() {
             return
         }
 
-        _, err := db.Exec("INSERT INTO messages (username, course_id, message) VALUES ($1, $2, $3)",
-            msg.Username, msg.CourseID, msg.Message)
+        _, err := db.Exec(
+            "INSERT INTO messages (username, course_id, message) VALUES ($1, $2, $3)",
+            msg.Username, msg.CourseID, msg.Message,
+        )
 
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -139,6 +175,7 @@ func main() {
         c.JSON(http.StatusOK, gin.H{"message": "Message sent"})
     })
 
+    // 📘 Запуск сервера
     port := os.Getenv("PORT")
     if port == "" {
         port = "8080"
